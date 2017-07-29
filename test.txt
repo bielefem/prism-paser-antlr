@@ -1,0 +1,47 @@
+
+mdp
+
+// CONSTANTS
+const K;
+
+global pay : [0..N];
+
+
+// COUNTER FORMULAE
+// ci number of steps since process last moved
+// removing trying and remainder states since
+// these are controlled by the process not the adversary
+
+// process can go if it does not stop one of the other processes round counter reaching K+1
+// added complication if two processes counter equals K-1, then if neither makes a transition
+// both reach K, and hence one must reach K+1 which we must disallow
+formula can1 = !((c2=K) | (c3=K) | ((c2=K-1) & (c3=K-1)));
+formula can2 = !((c1=K) | (c3=K) | ((c1=K-1) & (c3=K-1)));
+formula can3 = !((c1=K) | (c2=K) | ((c1=K-1) & (c2=K-1)));
+
+// when a process moves the counters of the other processes increase
+// but only when they are not in trying or remainder
+formula count1  = (p1!=13) & (p1!=0);
+formula count2  = (p2!=13) & (p2!=0);
+formula count3  = (p3!=13) & (p3!=0);
+formula ncount1 = (p1=13) | (p1=0);
+formula ncount2 = (p2=13) | (p2=0);
+formula ncount3 = (p3=13) | (p3=0);
+
+module crypt1
+  coin1 : [0..2]; // value of its coin
+  s1 : [0..1]; // its status (0 = not done, 1 = done)
+  agree1 : [0..1]; // what it states (0 = disagree, 1 = agree)
+
+
+
+  // flip coin
+  [] coin1=0 -> 0.5 : (coin1'=1) + 0.5 : (coin1'=2);
+
+  // make statement (once relevant coins have been flipped)
+  // agree (coins the same and does not pay)
+  [] s1=0 & coin1>0 & coin2>0 & coin1=coin2    & (pay!=p1) -> (s1'=1) & (agree1'=1);
+  // disagree (coins different and does not pay)
+  [] s1=0 & coin1>0 & coin2>0 & !(coin1=coin2) & (pay!=p1) -> (s1'=1);
+
+endmodule
